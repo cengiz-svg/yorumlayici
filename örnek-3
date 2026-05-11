@@ -1,0 +1,75 @@
+let sayac = 1;
+
+while (sayac <= 5) {
+    print sayac;
+    sayac = sayac + 1;
+}
+
+print "bitti";
+END
+
+ lexer
+
+KEYWORD(let)
+IDENTIFIER(sayac)
+OPERATOR(=)
+NUMBER(1)
+PUNCTUATION(;)
+
+KEYWORD(while)
+PUNCTUATION(()
+IDENTIFIER(sayac)
+OPERATOR(<=)
+NUMBER(5)
+PUNCTUATION())
+PUNCTUATION({)
+
+KEYWORD(print)
+IDENTIFIER(sayac)
+PUNCTUATION(;)
+
+IDENTIFIER(sayac)
+OPERATOR(=)
+IDENTIFIER(sayac)
+OPERATOR(+)
+NUMBER(1)
+PUNCTUATION(;)
+
+PUNCTUATION(})
+
+KEYWORD(print)
+STRING(bitti)
+PUNCTUATION(;)
+
+
+AST
+LET sayac
+  INT 1
+
+WHILE
+  BINARY <=
+    VAR sayac
+    INT 5
+
+  PRINT
+    VAR sayac
+
+  ASSIGN sayac
+    BINARY +
+      VAR sayac
+      INT 1
+
+PRINT
+  STRING bitti
+
+Sonuç
+1
+2
+3
+4
+5
+bitti
+
+
+
+
