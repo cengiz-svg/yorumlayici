@@ -1,0 +1,267 @@
+## Prompt 1
+
+C++ ile yorumlayıcı yapmak istiyorum ama nereden başlayacağımı bilmiyorum. İlk olarak ne yapmam gerekiyor?
+
+### AI Cevabı
+
+İlk olarak dil tasarımını yapman gerekiyor. Dil içerisinde hangi veri tiplerinin olacağını, hangi komutların destekleneceğini ve syntax yapısının nasıl olacağını belirlemelisin. Daha sonra lexer, parser, AST ve evaluator aşamalarına geçebilirsin.
+
+
+## Prompt 2
+
+Ben bu projede çok karmaşık şeyler yapmak istemiyorum. Basit bir yorumlayıcı için minimum neler gerekli?
+
+### AI Cevabı
+
+Basit bir yorumlayıcı için temel olarak lexer, parser, AST ve evaluator yeterlidir. Bunun yanında değişken sistemi ve basit hata kontrolü de eklenirse proje daha sağlam hale gelir.
+
+
+## Prompt 3
+
+Lexer tam olarak ne işe yarıyor? Direkt parser’a geçsek olmaz mıydı?
+
+### AI Cevabı
+
+Lexer kaynak kodu karakter karakter okuyarak token’lara ayırır. Parser’ın ham metinle uğraşması yerine token listesi ile çalışmasını sağlar. Direkt parser’a geçmek mümkündür ancak kod daha karmaşık ve yönetilmesi zor olur.
+
+
+## Prompt 4
+
+Token neden kullanıyoruz? Direkt stringlerle işlem yapmak daha kolay olmaz mıydı?
+
+### AI Cevabı
+
+Token kullanmak parser’ın daha düzenli çalışmasını sağlar. Çünkü parser keyword, sayı veya operatör gibi yapıları tek tek kontrol edebilir. Sürekli string karşılaştırmak hem karmaşıklığı artırır hem de hata yapmayı kolaylaştırır.
+
+
+## Prompt 5
+
+Enum kullanmanın amacı neydi? Direkt int kullansak olmaz mıydı?
+
+### AI Cevabı
+
+Enum kullanmak kodun okunabilirliğini artırır. Örneğin 1 yerine T_NUMBER veya T_IF yazılması kodun daha anlaşılır olmasını sağlar.
+
+
+## Prompt 6
+
+Struct kullanmamızın nedeni neydi?
+
+### AI Cevabı
+
+Struct sayesinde token veya AST node’ları gibi birden fazla bilgiyi tek yapı içerisinde saklayabiliyoruz. Örneğin bir token hem türünü hem de değerini aynı anda tutabiliyor.
+
+
+## Prompt 7
+
+Ben parser kısmını anlamadım. Parser tam olarak ne yapıyor?
+
+### AI Cevabı
+
+Parser lexer’dan gelen token listesini dilin gramer kurallarına göre kontrol eder. Eğer syntax doğruysa AST oluşturur. Eğer yanlış kullanım varsa syntax error verir.
+
+
+## Prompt 8
+
+AST oluşturmanın amacı ne? Direkt işlemi hesaplasak olmaz mıydı?
+
+### AI Cevabı
+
+AST sayesinde işlem öncelikleri doğru şekilde korunur. Ayrıca programın yapısı ağaç halinde tutulduğu için evaluator daha düzenli çalışır.
+
+
+## Prompt 9
+
+AST ile parse tree aynı şey mi?
+
+### AI Cevabı
+
+Benzer yapılar olsalar da tam olarak aynı değillerdir. Parse tree gramerin tamamını gösterirken AST daha sade bir yapıdır ve yalnızca önemli bilgileri tutar.
+
+
+## Prompt 10
+
+Recursive descent parser neden kullanılıyor?
+
+### AI Cevabı
+
+Çünkü küçük ve orta ölçekli yorumlayıcılarda yazılması ve anlaşılması daha kolaydır. Her grammar kuralı için ayrı fonksiyon yazılır.
+
+
+## Prompt 11
+
+Expression, term ve factor fonksiyonlarını neden ayırıyoruz?
+
+### AI Cevabı
+
+Bu ayrım işlem önceliklerini korumak için yapılır. Örneğin çarpma işlemi toplama işleminden önce hesaplanmalıdır.
+
+
+## Prompt 12
+
+Ben sadece toplama çıkarma yapacaktım ama neden bu kadar yapı oluştu?
+
+### AI Cevabı
+
+Çünkü yorumlayıcı geliştirmek yalnızca işlem hesaplamaktan ibaret değildir. Kodun okunması, parse edilmesi ve çalıştırılması için farklı aşamalar gerekir.
+
+
+## Prompt 13
+
+Semantic analysis tam olarak ne kontrol ediyor?
+
+### AI Cevabı
+
+Semantic analysis aşamasında tanımlanmamış değişkenler, tip uyumsuzlukları ve sıfıra bölme gibi anlam hataları kontrol edilir.
+
+
+## Prompt 14
+
+Syntax error ile semantic error arasındaki fark ne?
+
+### AI Cevabı
+
+Syntax error kodun yazım kurallarına uymadığını gösterir. Semantic error ise yazım doğru olsa bile programın anlam bakımından hatalı olduğunu gösterir.
+
+
+## Prompt 15
+
+Evaluator tam olarak ne yapıyor?
+
+### AI Cevabı
+
+Evaluator AST ağacını dolaşarak programı çalıştırır. Matematiksel işlemleri hesaplar, değişkenleri bellekte tutar ve çıktıları üretir.
+
+
+## Prompt 16
+
+Map kullanmadan değişken sistemi yapılabilir miydi?
+
+### AI Cevabı
+
+Evet yapılabilirdi ancak map kullanımı değişkenlere isim üzerinden erişimi çok daha kolay hale getirir.
+
+
+## Prompt 17
+
+while döngüsü yorumlayıcıda nasıl çalışıyor?
+
+### AI Cevabı
+
+Önce koşul evaluate edilir. Eğer sonuç true ise body kısmı çalıştırılır. Daha sonra koşul tekrar kontrol edilir ve false olana kadar devam eder.
+
+## Prompt 18
+
+if else yapısını parser içerisinde nasıl ayırıyoruz?
+
+### AI Cevabı
+
+Parser if tokenını gördüğünde önce koşulu parse eder daha sonra body kısmını parse eder. Eğer else tokenı varsa else bloğu da parse edilir.
+
+
+## Prompt 19
+
+Bu projede neden AST ağacını ekrana yazdırıyoruz?
+
+### AI Cevabı
+
+AST ağacını yazdırmak parser’ın doğru çalışıp çalışmadığını anlamayı kolaylaştırır. Ayrıca işlem öncelikleri görsel şekilde incelenebilir.
+
+
+## Prompt 20
+
+Lexer çıktısını göstermenin amacı ne?
+
+### AI Cevabı
+
+Lexer çıktısı kaynak kodun doğru tokenlara ayrılıp ayrılmadığını kontrol etmek için kullanılır.
+
+
+## Prompt 21
+
+Ben parser yazmadan direkt eval yapsam olur muydu?
+
+### AI Cevabı
+
+Küçük işlemler için mümkün olsa da karmaşık yapılar oluştuğunda parser olmadan kod yönetmek oldukça zorlaşır.
+
+
+## Prompt 22
+
+Bu projede neden class yerine struct kullandık?
+
+### AI Cevabı
+
+Çünkü struct yapıları daha basit veri tutma işlemleri için yeterliydi ve proje içerisinde kullanımı daha kolaydı.
+
+
+## Prompt 23
+
+Token dizisi neden gerekliydi?
+
+### AI Cevabı
+
+Lexer tarafından üretilen tokenların parser tarafından sırayla okunabilmesi için token listesi gereklidir.
+
+
+## Prompt 24
+
+Ben string veri tipini eklemesem olur muydu?
+
+### AI Cevabı
+
+Olurdu ancak dilin özellikleri daha sınırlı olurdu. String desteği print ve metin işlemleri için faydalıdır.
+
+
+## Prompt 25
+
+Bu projede bool veri tipi neden gerekliydi?
+
+### AI Cevabı
+
+Koşullu ifadelerin çalışabilmesi için true ve false değerlerine ihtiyaç vardır.
+
+
+## Prompt 26
+
+AST olmadan while çalıştırabilir miydik?
+
+### AI Cevabı
+
+Çok basit sistemlerde mümkün olabilir ancak AST kullanımı kontrol yapılarının daha düzenli çalışmasını sağlar.
+
+
+## Prompt 27
+
+Parser neden recursive çalışıyor?
+
+### AI Cevabı
+
+Çünkü expression yapıları iç içe olabilir. Recursive yapı sayesinde parser parantezli ifadeleri ve işlem önceliklerini daha kolay yönetebilir.
+
+
+## Prompt 28
+
+Bu projede en önemli kısım sence hangisi?
+
+### AI Cevabı
+
+Parser ve AST kısmı yorumlayıcının temelini oluşturur. Çünkü kodun yapısı burada analiz edilmektedir.
+
+
+## Prompt 29
+
+Bu proje gerçek programlama dillerine benziyor mu?
+
+### AI Cevabı
+
+Evet. Küçük ölçekli olsa da lexer, parser, AST ve evaluator gibi gerçek programlama dillerinde kullanılan temel bileşenleri içermektedir.
+
+
+## Prompt 30
+
+Ben bu projeyi geliştirsem ileride neler ekleyebilirim?
+
+### AI Cevabı
+
+Fonksiyon yapıları, for döngüsü, array sistemi, kullanıcıdan input alma, dosya işlemleri ve kendi standart kütüphaneni ekleyebilirsin.
