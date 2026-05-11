@@ -1,0 +1,59 @@
+MiniTR
+MiniTR, C++ ile geliştirdiğim basit bir yorumlayıcı (interpreter) projesidir. Bu projeyi geliştirirken temel amacım bir programlama dilinin nasıl çalıştığını daha iyi anlamaktı. Bu yüzden proje içerisinde lexer, parser, AST (Abstract Syntax Tree), semantic analysis ve evaluator gibi gerçek yorumlayıcılarda bulunan temel bileşenleri oluşturdum. Kullanıcı tarafından yazılan MiniTR kodları yorumlayıcı tarafından okunmakta, analiz edilmekte ve çalıştırılmaktadır.
+
+MiniTR dili içerisinde değişken tanımlama, matematiksel işlemler, koşullu ifadeler, döngüler ve ekrana çıktı verme gibi temel programlama özellikleri bulunmaktadır. Ayrıca program çalışırken syntax error ve semantic error kontrolleri de yapılmaktadır. Böylece yalnızca kodun sözdizimi değil aynı zamanda anlam bakımından doğru olup olmadığı da kontrol edilmektedir.
+
+MiniTR içerisinde int, string ve bool veri tipleri desteklenmektedir. Kullanıcılar let anahtar kelimesi ile değişken tanımlayabilmekte, print komutu ile ekrana çıktı verebilmekte, if / else yapıları ile koşullu işlemler gerçekleştirebilmekte ve while döngüsü ile tekrar eden işlemler yapabilmektedir. Bunun yanında +, -, *, / gibi matematiksel operatörler ile <, >, <=, >=, == ve != gibi karşılaştırma operatörleri de desteklenmektedir.
+
+Program çalıştırıldığında kullanıcıdan MiniTR dilinde yazılmış kaynak kod alınmaktadır. Kullanıcı kod girişini END yazarak tamamlamaktadır. Daha sonra yorumlayıcı girilen kodu analiz etmeye başlamaktadır. İlk aşamada lexer modülü çalışmaktadır. Lexer, kaynak kodu karakter karakter okuyarak anlamlı token yapılarına ayırmaktadır. Örneğin let, if ve while gibi ifadeler anahtar kelime olarak; değişken isimleri identifier olarak; sayılar ise number tokenı olarak algılanmaktadır. Böylece ham metin yorumlayıcının daha kolay işleyebileceği token listesine dönüştürülmektedir.
+
+Lexer aşamasından sonra parser modülü çalışmaktadır. Parser, lexer tarafından oluşturulan token listesini okuyarak dilin gramer kurallarına uygun olup olmadığını kontrol etmektedir. Eğer eksik parantez, eksik noktalı virgül veya yanlış kullanım varsa kullanıcıya syntax error mesajı verilmektedir. Parser aynı zamanda AST (Abstract Syntax Tree) yapısını oluşturmaktadır. AST yapısı sayesinde matematiksel işlemler işlem önceliğine göre doğru şekilde gerçekleştirilmektedir. Örneğin 7 + 5 * 3 ifadesinde önce çarpma işlemi yapılmaktadır ve AST ağacı bu işlem sırasını doğru şekilde göstermektedir.
+
+Parser aşamasından sonra semantic analysis gerçekleştirilmektedir. Bu aşamada tanımlanmamış değişken kullanımı, tip uyumsuzlukları ve sıfıra bölme gibi durumlar kontrol edilmektedir. Eğer program anlam bakımından hatalıysa semantic error mesajı gösterilmektedir. Son aşamada evaluator modülü AST ağacını dolaşarak programı çalıştırmaktadır. Değişkenler bellekte tutulmakta, matematiksel işlemler hesaplanmakta, if koşulları değerlendirilmekte ve while döngüleri çalıştırılmaktadır. Programın ürettiği sonuçlar ekrana yazdırılmaktadır.
+
+Gramer Yapısı (EBNF / CFG)
+program     -> statement*
+
+statement   -> letStmt
+             | assignStmt
+             | printStmt
+             | ifStmt
+             | whileStmt
+
+letStmt     -> "let" IDENTIFIER "=" expression ";"
+
+assignStmt  -> IDENTIFIER "=" expression ";"
+
+printStmt   -> "print" expression ";"
+
+ifStmt      -> "if" "(" expression ")" block
+               ("else" block)?
+
+whileStmt   -> "while" "(" expression ")" block
+
+block       -> "{" statement* "}"
+
+expression  -> comparison (("==" | "!=") comparison)*
+
+comparison  -> term ((">" | "<" | ">=" | "<=") term)*
+
+term        -> factor (("+" | "-") factor)*
+
+factor      -> primary (("*" | "/") primary)*
+
+primary     -> NUMBER
+             | STRING
+             | BOOLEAN
+             | IDENTIFIER
+             | "(" expression ")"
+Derleme ve Çalıştırma
+Programı derlemek için:
+
+g++ src/main.cpp -o MiniTR
+Programı çalıştırmak için:
+
+./MiniTR
+Windows ortamında:
+
+MiniTR.exe
+Program çalıştırıldıktan sonra MiniTR kodları yazılmaktadır. Kod yazımı bittikten sonra son satıra END yazılarak giriş tamamlanmaktadır.
