@@ -1,0 +1,78 @@
+let a = 12;
+let b = 4;
+
+print a + b;
+print a - b;
+print a * b;
+print a / b;
+END
+
+lexer
+KEYWORD(let)
+IDENTIFIER(a)
+OPERATOR(=)
+NUMBER(12)
+PUNCTUATION(;)
+
+KEYWORD(let)
+IDENTIFIER(b)
+OPERATOR(=)
+NUMBER(4)
+PUNCTUATION(;)
+
+KEYWORD(print)
+IDENTIFIER(a)
+OPERATOR(+)
+IDENTIFIER(b)
+PUNCTUATION(;)
+
+KEYWORD(print)
+IDENTIFIER(a)
+OPERATOR(-)
+IDENTIFIER(b)
+PUNCTUATION(;)
+
+KEYWORD(print)
+IDENTIFIER(a)
+OPERATOR(*)
+IDENTIFIER(b)
+PUNCTUATION(;)
+
+KEYWORD(print)
+IDENTIFIER(a)
+OPERATOR(/)
+IDENTIFIER(b)
+PUNCTUATION(;)
+
+AST 
+LET a
+  INT 12
+
+LET b
+  INT 4
+
+PRINT
+  BINARY +
+    VAR a
+    VAR b
+
+PRINT
+  BINARY -
+    VAR a
+    VAR b
+
+PRINT
+  BINARY *
+    VAR a
+    VAR b
+
+PRINT
+  BINARY /
+    VAR a
+    VAR b
+
+Sonuç 
+16
+8
+48
+3
