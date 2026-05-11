@@ -48,12 +48,11 @@ primary     -> NUMBER
              | "(" expression ")"
 Derleme ve Çalıştırma
 Programı derlemek için:
-
 g++ src/main.cpp -o MiniTR
-Programı çalıştırmak için:
 
+Programı çalıştırmak için:
 ./MiniTR
-Windows ortamında:
+
 
 MiniTR.exe
 Program çalıştırıldıktan sonra MiniTR kodları yazılmaktadır. Kod yazımı bittikten sonra son satıra END yazılarak giriş tamamlanmaktadır.
