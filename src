@@ -1,0 +1,662 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <cctype>
+#include <cstdlib>
+using namespace std;
+
+enum Tok {
+    NUM, STR, BOOL, ID,
+    LET, PRINT, IF, ELSE, WHILE,
+    PLUS, MINUS, MUL, DIV,
+    ASSIGN, EQ, NE, LT, GT, LE, GE,
+    LP, RP, LB, RB, SEMI, END
+};
+
+struct Token {
+    Tok type;
+    string text;
+};
+
+vector<Token> tokens;
+int pos = 0;
+
+void error(string msg) {
+    cout << "Syntax Error: " << msg << endl;
+    exit(1);
+}
+
+void add(Tok t, string s = "") {
+    tokens.push_back({ t, s });
+}
+
+void lexer(string code) {
+    int i = 0;
+
+    while (i < code.size()) {
+        if (isspace(code[i])) {
+            i++;
+            continue;
+        }
+
+        if (isdigit(code[i])) {
+            string n;
+            while (i < code.size() && isdigit(code[i]))
+                n += code[i++];
+
+            add(NUM, n);
+            continue;
+        }
+
+        if (isalpha(code[i]) || code[i] == '_') {
+            string w;
+            while (i < code.size() && (isalnum(code[i]) || code[i] == '_'))
+                w += code[i++];
+
+            if (w == "let") add(LET);
+            else if (w == "print") add(PRINT);
+            else if (w == "if") add(IF);
+            else if (w == "else") add(ELSE);
+            else if (w == "while") add(WHILE);
+            else if (w == "true" || w == "false") add(BOOL, w);
+            else add(ID, w);
+
+            continue;
+        }
+
+        if (code[i] == '"') {
+            i++;
+            string s;
+
+            while (i < code.size() && code[i] != '"')
+                s += code[i++];
+
+            if (i >= code.size()) error("string kapanmadi");
+
+            i++;
+            add(STR, s);
+            continue;
+        }
+
+        if (code[i] == '=' && code[i + 1] == '=') {
+            add(EQ); i += 2; continue;
+        }
+
+        if (code[i] == '!' && code[i + 1] == '=') {
+            add(NE); i += 2; continue;
+        }
+
+        if (code[i] == '<' && code[i + 1] == '=') {
+            add(LE); i += 2; continue;
+        }
+
+        if (code[i] == '>' && code[i + 1] == '=') {
+            add(GE); i += 2; continue;
+        }
+
+        char c = code[i++];
+
+        if (c == '+') add(PLUS);
+        else if (c == '-') add(MINUS);
+        else if (c == '*') add(MUL);
+        else if (c == '/') add(DIV);
+        else if (c == '=') add(ASSIGN);
+        else if (c == '<') add(LT);
+        else if (c == '>') add(GT);
+        else if (c == '(') add(LP);
+        else if (c == ')') add(RP);
+        else if (c == '{') add(LB);
+        else if (c == '}') add(RB);
+        else if (c == ';') add(SEMI);
+        else error("bilinmeyen karakter");
+    }
+
+    add(END);
+}
+void printTokens() {
+
+    cout << "\nTOKEN LIST:\n";
+
+    for (Token t : tokens) {
+
+        if (t.type == NUM)
+            cout << "NUMBER(" << t.text << ")\n";
+
+        else if (t.type == STR)
+            cout << "STRING(" << t.text << ")\n";
+
+        else if (t.type == BOOL)
+            cout << "BOOLEAN(" << t.text << ")\n";
+
+        else if (t.type == ID)
+            cout << "IDENTIFIER(" << t.text << ")\n";
+
+        else if (t.type == LET)
+            cout << "KEYWORD(let)\n";
+
+        else if (t.type == PRINT)
+            cout << "KEYWORD(print)\n";
+
+        else if (t.type == IF)
+            cout << "KEYWORD(if)\n";
+
+        else if (t.type == ELSE)
+            cout << "KEYWORD(else)\n";
+
+        else if (t.type == WHILE)
+            cout << "KEYWORD(while)\n";
+
+        else if (t.type == PLUS)
+            cout << "OPERATOR(+)\n";
+
+        else if (t.type == MINUS)
+            cout << "OPERATOR(-)\n";
+
+        else if (t.type == MUL)
+            cout << "OPERATOR(*)\n";
+
+        else if (t.type == DIV)
+            cout << "OPERATOR(/)\n";
+
+        else if (t.type == ASSIGN)
+            cout << "OPERATOR(=)\n";
+
+        else if (t.type == LT)
+            cout << "OPERATOR(<)\n";
+
+        else if (t.type == GT)
+            cout << "OPERATOR(>)\n";
+
+        else if (t.type == LE)
+            cout << "OPERATOR(<=)\n";
+
+        else if (t.type == GE)
+            cout << "OPERATOR(>=)\n";
+
+        else if (t.type == EQ)
+            cout << "OPERATOR(==)\n";
+
+        else if (t.type == NE)
+            cout << "OPERATOR(!=)\n";
+
+        else if (t.type == LP)
+            cout << "PUNCTUATION(()\n";
+
+        else if (t.type == RP)
+            cout << "PUNCTUATION())\n";
+
+        else if (t.type == LB)
+            cout << "PUNCTUATION({)\n";
+
+        else if (t.type == RB)
+            cout << "PUNCTUATION(})\n";
+
+        else if (t.type == SEMI)
+            cout << "PUNCTUATION(;)\n";
+    }
+}
+
+Token peek() { return tokens[pos]; }
+Token get() { return tokens[pos++]; }
+
+void expect(Tok t, string msg) {
+    if (peek().type != t) error(msg);
+    get();
+}
+
+enum ValueType {
+    V_INT,
+    V_STRING,
+    V_BOOL
+};
+
+struct Value {
+    ValueType type;
+    int i;
+    string s;
+    bool b;
+};
+
+enum ExprType {
+    E_VALUE,
+    E_VAR,
+    E_BINARY
+};
+
+struct Expr {
+    ExprType type;
+    Value value;
+    string name;
+    Tok op;
+    Expr* left;
+    Expr* right;
+};
+
+enum StmtType {
+    S_PRINT,
+    S_LET,
+    S_ASSIGN,
+    S_IF,
+    S_WHILE
+};
+
+struct Stmt {
+    StmtType type;
+    string name;
+    Expr* expr;
+    Expr* cond;
+    vector<Stmt*> body;
+    vector<Stmt*> elseBody;
+};
+
+Expr* valNode(Value v) {
+    Expr* e = new Expr{};
+    e->type = E_VALUE;
+    e->value = v;
+    return e;
+}
+
+Expr* varNode(string name) {
+    Expr* e = new Expr{};
+    e->type = E_VAR;
+    e->name = name;
+    return e;
+}
+
+Expr* binNode(Tok op, Expr* l, Expr* r) {
+    Expr* e = new Expr{};
+    e->type = E_BINARY;
+    e->op = op;
+    e->left = l;
+    e->right = r;
+    return e;
+}
+
+Expr* expression();
+
+Expr* primary() {
+    Token t = get();
+
+    if (t.type == NUM)
+        return valNode({ V_INT, stoi(t.text), "", false });
+
+    if (t.type == STR)
+        return valNode({ V_STRING, 0, t.text, false });
+
+    if (t.type == BOOL)
+        return valNode({ V_BOOL, 0, "", t.text == "true" });
+
+    if (t.type == ID)
+        return varNode(t.text);
+
+    if (t.type == LP) {
+        Expr* e = expression();
+        expect(RP, "')' bekleniyor");
+        return e;
+    }
+
+    error("ifade bekleniyor");
+    return nullptr;
+}
+
+Expr* factor() {
+    Expr* left = primary();
+
+    while (peek().type == MUL || peek().type == DIV) {
+        Tok op = get().type;
+        Expr* right = primary();
+        left = binNode(op, left, right);
+    }
+
+    return left;
+}
+
+Expr* term() {
+    Expr* left = factor();
+
+    while (peek().type == PLUS || peek().type == MINUS) {
+        Tok op = get().type;
+        Expr* right = factor();
+        left = binNode(op, left, right);
+    }
+
+    return left;
+}
+
+Expr* comparison() {
+    Expr* left = term();
+
+    while (peek().type == LT || peek().type == GT || peek().type == LE || peek().type == GE) {
+        Tok op = get().type;
+        Expr* right = term();
+        left = binNode(op, left, right);
+    }
+
+    return left;
+}
+
+Expr* expression() {
+    Expr* left = comparison();
+
+    while (peek().type == EQ || peek().type == NE) {
+        Tok op = get().type;
+        Expr* right = comparison();
+        left = binNode(op, left, right);
+    }
+
+    return left;
+}
+
+Stmt* statement();
+
+vector<Stmt*> block() {
+    vector<Stmt*> stmts;
+
+    expect(LB, "'{' bekleniyor");
+
+    while (peek().type != RB && peek().type != END) {
+        stmts.push_back(statement());
+    }
+
+    expect(RB, "'}' bekleniyor");
+
+    return stmts;
+}
+
+Stmt* statement() {
+    Stmt* s = new Stmt{};
+
+    if (peek().type == PRINT) {
+        get();
+        s->type = S_PRINT;
+        s->expr = expression();
+        expect(SEMI, "';' bekleniyor");
+        return s;
+    }
+
+    if (peek().type == LET) {
+        get();
+        s->type = S_LET;
+
+        if (peek().type != ID) error("degisken adi bekleniyor");
+        s->name = get().text;
+
+        expect(ASSIGN, "'=' bekleniyor");
+        s->expr = expression();
+        expect(SEMI, "';' bekleniyor");
+        return s;
+    }
+
+    if (peek().type == ID) {
+        s->type = S_ASSIGN;
+        s->name = get().text;
+
+        expect(ASSIGN, "'=' bekleniyor");
+        s->expr = expression();
+        expect(SEMI, "';' bekleniyor");
+        return s;
+    }
+
+    if (peek().type == IF) {
+        get();
+        s->type = S_IF;
+
+        expect(LP, "'(' bekleniyor");
+        s->cond = expression();
+        expect(RP, "')' bekleniyor");
+
+        s->body = block();
+
+        if (peek().type == ELSE) {
+            get();
+            s->elseBody = block();
+        }
+
+        return s;
+    }
+
+    if (peek().type == WHILE) {
+        get();
+        s->type = S_WHILE;
+
+        expect(LP, "'(' bekleniyor");
+        s->cond = expression();
+        expect(RP, "')' bekleniyor");
+
+        s->body = block();
+
+        return s;
+    }
+
+    error("gecersiz komut");
+    return nullptr;
+}
+
+map<string, Value> memory;
+
+bool truth(Value v) {
+    if (v.type == V_BOOL) return v.b;
+    if (v.type == V_INT) return v.i != 0;
+    if (v.type == V_STRING) return v.s != "";
+    return false;
+}
+
+Value eval(Expr* e) {
+    if (e->type == E_VALUE) return e->value;
+
+    if (e->type == E_VAR) {
+        if (!memory.count(e->name)) {
+            cout << "Semantic Error: tanimsiz degisken " << e->name << endl;
+            exit(1);
+        }
+
+        return memory[e->name];
+    }
+
+    Value a = eval(e->left);
+    Value b = eval(e->right);
+
+    if (e->op == PLUS && a.type == V_INT && b.type == V_INT)
+        return { V_INT, a.i + b.i, "", false };
+
+    if (e->op == MINUS && a.type == V_INT && b.type == V_INT)
+        return { V_INT, a.i - b.i, "", false };
+
+    if (e->op == MUL && a.type == V_INT && b.type == V_INT)
+        return { V_INT, a.i * b.i, "", false };
+
+    if (e->op == DIV && a.type == V_INT && b.type == V_INT) {
+        if (b.i == 0) {
+            cout << "Semantic Error: sifira bolme" << endl;
+            exit(1);
+        }
+
+        return { V_INT, a.i / b.i, "", false };
+    }
+
+    if (e->op == PLUS && a.type == V_STRING && b.type == V_STRING)
+        return { V_STRING, 0, a.s + b.s, false };
+
+    if (a.type == V_INT && b.type == V_INT) {
+        if (e->op == LT) return { V_BOOL, 0, "", a.i < b.i };
+        if (e->op == GT) return { V_BOOL, 0, "", a.i > b.i };
+        if (e->op == LE) return { V_BOOL, 0, "", a.i <= b.i };
+        if (e->op == GE) return { V_BOOL, 0, "", a.i >= b.i };
+        if (e->op == EQ) return { V_BOOL, 0, "", a.i == b.i };
+        if (e->op == NE) return { V_BOOL, 0, "", a.i != b.i };
+    }
+
+    if (a.type == V_BOOL && b.type == V_BOOL) {
+        if (e->op == EQ) return { V_BOOL, 0, "", a.b == b.b };
+        if (e->op == NE) return { V_BOOL, 0, "", a.b != b.b };
+    }
+
+    if (a.type == V_STRING && b.type == V_STRING) {
+        if (e->op == EQ) return { V_BOOL, 0, "", a.s == b.s };
+        if (e->op == NE) return { V_BOOL, 0, "", a.s != b.s };
+    }
+
+    cout << "Semantic Error: tip uyumsuzlugu" << endl;
+    exit(1);
+}
+
+void printValue(Value v) {
+    if (v.type == V_INT) cout << v.i << endl;
+    else if (v.type == V_STRING) cout << v.s << endl;
+    else if (v.type == V_BOOL) cout << (v.b ? "true" : "false") << endl;
+}
+
+void run(vector<Stmt*> stmts);
+
+void exec(Stmt* s) {
+    if (s->type == S_PRINT) {
+        printValue(eval(s->expr));
+    }
+
+    else if (s->type == S_LET) {
+        memory[s->name] = eval(s->expr);
+    }
+
+    else if (s->type == S_ASSIGN) {
+        if (!memory.count(s->name)) {
+            cout << "Semantic Error: tanimsiz degisken " << s->name << endl;
+            exit(1);
+        }
+
+        memory[s->name] = eval(s->expr);
+    }
+
+    else if (s->type == S_IF) {
+        if (truth(eval(s->cond)))
+            run(s->body);
+        else
+            run(s->elseBody);
+    }
+
+    else if (s->type == S_WHILE) {
+        int guard = 0;
+
+        while (truth(eval(s->cond))) {
+            run(s->body);
+
+            guard++;
+            if (guard > 100000) {
+                cout << "Runtime Error: sonsuz dongu olabilir" << endl;
+                exit(1);
+            }
+        }
+    }
+}
+
+void run(vector<Stmt*> stmts) {
+    for (Stmt* s : stmts)
+        exec(s);
+}
+
+void printAST(Expr* e, int level = 0) {
+    for (int i = 0; i < level; i++) cout << "  ";
+
+    if (e->type == E_VALUE) {
+        if (e->value.type == V_INT) cout << "INT " << e->value.i << endl;
+        else if (e->value.type == V_STRING) cout << "STRING " << e->value.s << endl;
+        else cout << "BOOL " << (e->value.b ? "true" : "false") << endl;
+    }
+
+    else if (e->type == E_VAR) {
+        cout << "VAR " << e->name << endl;
+    }
+
+    else {
+        cout << "BINARY ";
+
+        if (e->op == PLUS) cout << "+";
+        else if (e->op == MINUS) cout << "-";
+        else if (e->op == MUL) cout << "*";
+        else if (e->op == DIV) cout << "/";
+        else if (e->op == LT) cout << "<";
+        else if (e->op == GT) cout << ">";
+        else if (e->op == LE) cout << "<=";
+        else if (e->op == GE) cout << ">=";
+        else if (e->op == EQ) cout << "==";
+        else if (e->op == NE) cout << "!=";
+
+        cout << endl;
+
+        printAST(e->left, level + 1);
+        printAST(e->right, level + 1);
+    }
+}
+
+void printStmtAST(Stmt* s, int level = 0) {
+    for (int i = 0; i < level; i++) cout << "  ";
+
+    if (s->type == S_PRINT) {
+        cout << "PRINT" << endl;
+        printAST(s->expr, level + 1);
+    }
+
+    else if (s->type == S_LET) {
+        cout << "LET " << s->name << endl;
+        printAST(s->expr, level + 1);
+    }
+
+    else if (s->type == S_ASSIGN) {
+        cout << "ASSIGN " << s->name << endl;
+        printAST(s->expr, level + 1);
+    }
+
+    else if (s->type == S_IF) {
+        cout << "IF" << endl;
+        printAST(s->cond, level + 1);
+
+        for (Stmt* st : s->body)
+            printStmtAST(st, level + 1);
+
+        if (!s->elseBody.empty()) {
+            for (int i = 0; i < level; i++) cout << "  ";
+            cout << "ELSE" << endl;
+
+            for (Stmt* st : s->elseBody)
+                printStmtAST(st, level + 1);
+        }
+    }
+
+    else if (s->type == S_WHILE) {
+        cout << "WHILE" << endl;
+        printAST(s->cond, level + 1);
+
+        for (Stmt* st : s->body)
+            printStmtAST(st, level + 1);
+    }
+}
+
+int main() {
+    string code, line;
+    cout << "YENI KOD CALISIYOR\n";
+    cout << "MiniTR kodunu gir. Bitirmek icin END yaz:\n";
+
+    while (getline(cin, line)) {
+        if (line == "END") break;
+        code += line + "\n";
+    }
+    lexer(code);
+
+    printTokens();
+
+    vector<Stmt*> program;
+
+    while (peek().type != END)
+        program.push_back(statement());
+
+    cout << "\nAST / Parse Tree:\n";
+
+    for (Stmt* s : program)
+        printStmtAST(s);
+
+    cout << "\nProgram ciktisi:\n";
+
+    run(program);
+
+    return 0;
+}
