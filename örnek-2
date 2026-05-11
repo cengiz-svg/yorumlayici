@@ -1,0 +1,70 @@
+let not = 75;
+let sinir = 50;
+
+if (not >= sinir) {
+    print "gecti";
+} else {
+    print "kaldi";
+}
+END
+
+lexer 
+
+KEYWORD(let)
+IDENTIFIER(not)
+OPERATOR(=)
+NUMBER(75)
+PUNCTUATION(;)
+
+KEYWORD(let)
+IDENTIFIER(sinir)
+OPERATOR(=)
+NUMBER(50)
+PUNCTUATION(;)
+
+KEYWORD(if)
+PUNCTUATION(()
+IDENTIFIER(not)
+OPERATOR(>=)
+IDENTIFIER(sinir)
+PUNCTUATION())
+PUNCTUATION({)
+
+KEYWORD(print)
+STRING(gecti)
+PUNCTUATION(;)
+
+PUNCTUATION(})
+
+KEYWORD(else)
+PUNCTUATION({)
+
+KEYWORD(print)
+STRING(kaldi)
+PUNCTUATION(;)
+
+PUNCTUATION(})
+
+AST 
+
+LET not
+  INT 75
+
+LET sinir
+  INT 50
+
+IF
+  BINARY >=
+    VAR not
+    VAR sinir
+
+  PRINT
+    STRING gecti
+
+ELSE
+
+  PRINT
+    STRING kaldi
+
+Sonuç
+gecti
