@@ -1,0 +1,456 @@
+Prompt 1
+C++ ile bir yorumlayıcı geliştirmek istiyorum ama mimariyi nasıl kurmam gerektiğini tam bilmiyorum. İlk aşamada hangi bileşenleri planlamam gerekiyor?
+AI Cevabı
+İlk olarak dil tasarımını netleştirmen gerekiyor. Çünkü yorumlayıcının bütün mimarisi dilin kurallarına göre şekillenir. Desteklenecek veri tipleri, anahtar kelimeler, operatörler, kontrol yapıları ve syntax kuralları başlangıçta belirlenmelidir.
+Daha sonra yorumlayıcının temel bileşenleri oluşturulur:
+•	Lexer
+•	Parser
+•	AST (Abstract Syntax Tree)
+•	Semantic Analysis
+•	Evaluator
+Lexer kaynak kodu tokenlara ayırır. Parser token listesini grammar kurallarına göre analiz eder ve AST üretir. Semantic analysis aşaması anlam kontrollerini yapar. Evaluator ise AST ağacını çalıştırarak program çıktısını üretir.
+Benim Devam Sorularım
+Burada parser’ın direkt kaynak kod yerine token listesiyle çalışmasının temel nedeni performans mı yoksa mimariyi sadeleştirmek mi?
+AI Cevabı
+Asıl amaç mimariyi sadeleştirmektir. Çünkü parser’ın karakter karakter işlem yapması grammar kontrolünü oldukça karmaşık hale getirir.
+Örneğin lexer sayesinde parser artık yalnızca:
+NUMBER
+IDENTIFIER
+PLUS
+IF
+WHILE
+gibi anlamlı yapılarla çalışır.
+Bu durum:
+•	parser’ın okunabilirliğini artırır
+•	hata ayıklamayı kolaylaştırır
+•	grammar kurallarını daha düzenli hale getirir
+Performans avantajı da vardır fakat temel amaç parser’ı daha yönetilebilir hale getirmektir.
+Benim Devam Sorularım
+Yani lexer aslında parser için bir ön işleme katmanı gibi çalışıyor diyebilir miyiz?
+AI Cevabı
+Evet. Lexer kaynak kodu daha düzenli bir veri yapısına dönüştürerek parser’ın işini kolaylaştırır.
+Bu yüzden gerçek derleyici ve yorumlayıcı mimarilerinde lexer ve parser genellikle ayrı katmanlar halinde tasarlanır.
+________________________________________
+Prompt 2
+Lexer tam olarak ne işe yarıyor? Direkt parser’a geçsek olmaz mıydı?
+AI Cevabı
+Aslında teorik olarak mümkün olabilir ama pratikte parser’ın ham metinle uğraşması çok karmaşık hale gelir. Lexer’ın amacı kaynak kodu daha düzenli bir yapıya dönüştürmektir.
+Örneğin:
+let x = 5 + 3;
+Lexer bunu şuna dönüştürür:
+KEYWORD(let)
+IDENTIFIER(x)
+OPERATOR(=)
+NUMBER(5)
+OPERATOR(+)
+NUMBER(3)
+Böylece parser artık karakterlerle değil anlamlı tokenlarla çalışır.
+Benim Devam Sorularım
+Burada token kullanımı parser’ın grammar kontrolünü kolaylaştırıyor anladım ama bu yapı hata ayıklama kısmında da avantaj sağlıyor mu?
+AI Cevabı
+Kesinlikle sağlıyor.
+Çünkü lexer çıktısını ayrı görebildiğin zaman problemin lexer’da mı parser’da mı olduğunu daha kolay anlayabiliyorsun.
+Örneğin parser yanlış çalışıyorsa önce token listesini kontrol ederek lexer’ın doğru token üretip üretmediğini inceleyebilirsin.
+Bu katmanlı yapı debugging sürecini ciddi şekilde kolaylaştırır.
+Benim Devam Sorularım
+Yani aslında lexer ve parser’ı ayırmak sadece mimari değil debugging açısından da önemli diyebilir miyiz?
+AI Cevabı
+Evet. Büyük projelerde bu ayrım oldukça önemlidir.
+Çünkü lexer, parser ve evaluator birbirinden bağımsız test edilebilir hale gelir.
+Bu da yorumlayıcı geliştirme sürecini daha yönetilebilir yapar.
+________________________________________
+Prompt 3
+Ben parser kısmını hâlâ tam oturtamadım. Parser tam olarak ne yapıyor?
+AI Cevabı
+Parser lexer’dan gelen token listesini dilin gramer kurallarına göre kontrol eder.
+Örneğin:
+print 5 + ;
+ifadesi syntax olarak hatalıdır.
+Parser bunu fark ederek syntax error üretir.
+Ayrıca parser yalnızca hata kontrolü yapmaz. Aynı zamanda AST ağacını da oluşturur.
+Benim Devam Sorularım
+Parser’ın AST üretmesi neden gerekli? Parser sadece syntax kontrolü yapıp bıraksa evaluator işlemi kendi çözemez miydi?
+AI Cevabı
+Teorik olarak evaluator doğrudan token listesiyle çalışabilir fakat bu yapı çok karmaşık hale gelir.
+AST sayesinde programın yapısı düzenli şekilde temsil edilir.
+Örneğin:
+7 + 5 * 3
+ifadesinde hangi işlemin önce yapılacağını AST belirler.
+Bu yüzden evaluator doğrudan tokenlarla uğraşmak yerine AST üzerinden çalışır.
+Benim Devam Sorularım
+Yani AST aslında evaluator için optimize edilmiş bir ara yapı gibi mi düşünülebilir?
+AI Cevabı
+Evet. AST parser ile evaluator arasında köprü görevi görür.
+Parser syntax analizini yapar, evaluator ise AST üzerinden programı çalıştırır.
+Bu ayrım yorumlayıcının mimarisini daha temiz hale getirir.
+________________________________________
+Prompt 4
+AST oluşturmanın amacı ne? Direkt işlemi hesaplasak olmaz mıydı?
+AI Cevabı
+Çok küçük işlemlerde mümkün olabilir ama işlem öncelikleri ve karmaşık yapılar geldiğinde AST gerekli hale gelir.
+Örneğin:
+7 + 5 * 3
+ifadesinde önce çarpma yapılmalıdır.
+AST bunu şu şekilde temsil eder:
++
+├── 7
+└── *
+    ├── 5
+    └── 3
+Bu yapı evaluator’ın işlemleri doğru sırada yapmasını sağlar.
+Benim Devam Sorularım
+Ben burada şunu tam anlayamadım. AST olmasa evaluator işlem önceliğini kendi başına çözemez miydi?
+AI Cevabı
+Çözebilir fakat bu durumda evaluator hem syntax çözmek hem işlem önceliği belirlemek zorunda kalırdı.
+Bu da evaluator’ı gereğinden fazla karmaşık hale getirir.
+AST sayesinde işlem sırası parser aşamasında belirlenmiş olur.
+Evaluator artık yalnızca ağacı dolaşarak işlemleri gerçekleştirir.
+Benim Devam Sorularım
+Yani AST aslında evaluator’ın yükünü azaltıyor diyebilir miyiz?
+AI Cevabı
+Evet. AST evaluator’ın yalnızca çalışma aşamasına odaklanmasını sağlar.
+Bu yüzden modern yorumlayıcı ve derleyicilerin çoğunda AST yapısı kullanılır.
+________________________________________
+Prompt 5
+AST ile parse tree aynı şey mi? İnternette farklı şeyler yazıyor.
+AI Cevabı
+Birbirlerine çok benzerler ama tamamen aynı değillerdir.
+Parse tree daha detaylıdır ve grammar kurallarının tamamını içerir.
+AST ise sadeleştirilmiş yapıdır. Gereksiz grammar detaylarını atar ve yalnızca önemli yapıları tutar.
+Bu yüzden yorumlayıcılarda genelde AST kullanılır.
+Benim Devam Sorularım
+Ben burada yine biraz karıştırdım. Parse tree daha detaylıysa neden direkt onu kullanmıyoruz?
+AI Cevabı
+Çünkü parse tree çok fazla gereksiz bilgi içerir.
+Örneğin grammar kurallarındaki ara yapılar da ağaçta tutulur.
+Bu durum evaluator tarafını gereksiz şekilde büyütür.
+AST ise yalnızca gerçekten gerekli olan expression ve statement yapılarını tuttuğu için daha verimlidir.
+Benim Devam Sorularım
+Yani AST biraz optimize edilmiş parse tree gibi düşünülebilir mi?
+AI Cevabı
+Evet, oldukça yakın bir tanım olur.
+AST parse tree’nin sadeleştirilmiş ve evaluator için daha uygun hale getirilmiş versiyonu gibi düşünülebilir.
+________________________________________
+Prompt 6
+Struct kullanmamızın nedeni neydi? Ben burada biraz karıştım.
+AI Cevabı
+Struct kullanmamızın nedeni birden fazla bilgiyi tek yapı içerisinde tutabilmek.
+Örneğin bir token:
+•	tür bilgisi
+•	sayı değeri
+•	string değeri
+aynı anda tutabilir.
+Mesela:
+struct Token {
+    TokenType type;
+    string value;
+};
+şeklinde bir yapı lexer ve parser aşamasını kolaylaştırır.
+________________________________________
+Prompt 7
+Ben parser kısmını hâlâ tam oturtamadım. Parser tam olarak ne yapıyor?
+AI Cevabı
+Parser lexer’dan gelen token listesini dilin gramer kurallarına göre kontrol eder.
+Örneğin:
+print 5 + ;
+ifadesi syntax olarak hatalıdır.
+Parser bunu fark ederek syntax error üretir.
+Ayrıca parser yalnızca hata kontrolü yapmaz. Aynı zamanda AST ağacını da oluşturur.
+________________________________________
+Prompt 8
+Ben yine tam anlayamadım. Parser AST’yi nasıl oluşturuyor? Direkt biraz daha basit anlatır mısın?
+AI Cevabı
+Tabii. Parser aslında tokenları okuyup bunlardan bir ağaç oluşturuyor.
+Mesela şu ifadeyi düşün:
+7 + 5
+Parser önce 7 sayısını bir node yapıyor.
+Sonra + operatörünü görüyor.
+Daha sonra 5 sayısını ayrı node yapıyor.
+En sonunda bunları birleştiriyor:
++
+├── 7
+└── 5
+Yani parser’ın yaptığı şey aslında programın yapısını ağaç haline getirmek.
+________________________________________
+Prompt 9
+AST oluşturmanın amacı ne? Direkt işlemi hesaplasak olmaz mıydı?
+AI Cevabı
+Çok küçük işlemlerde mümkün olabilir ama işlem öncelikleri ve karmaşık yapılar geldiğinde AST gerekli hale gelir.
+Örneğin:
+7 + 5 * 3
+ifadesinde önce çarpma yapılmalıdır.
+AST bunu şu şekilde temsil eder:
++
+├── 7
+└── *
+    ├── 5
+    └── 3
+Bu yapı evaluator’ın işlemleri doğru sırada yapmasını sağlar.
+________________________________________
+Prompt 10
+AST oluşturmanın amacı ne? Direkt işlemi hesaplasak olmaz mıydı?
+AI Cevabı
+Çok küçük işlemlerde mümkün olabilir ama işlem öncelikleri ve karmaşık yapılar geldiğinde AST gerekli hale gelir.
+Örneğin:
+7 + 5 * 3
+ifadesinde önce çarpma yapılmalıdır.
+AST bunu şu şekilde temsil eder:
++
+├── 7
+└── *
+    ├── 5
+    └── 3
+Bu yapı evaluator’ın işlemleri doğru sırada yapmasını sağlar.
+________________________________________
+Prompt 11
+AST ile parse tree aynı şey mi? İnternette farklı şeyler yazıyor.
+AI Cevabı
+Birbirlerine çok benzerler ama tamamen aynı değillerdir.
+Parse tree daha detaylıdır ve grammar kurallarının tamamını içerir.
+AST ise sadeleştirilmiş yapıdır. Gereksiz grammar detaylarını atar ve yalnızca önemli yapıları tutar.
+Bu yüzden yorumlayıcılarda genelde AST kullanılır.
+________________________________________
+Prompt 12
+Recursive descent parser neden kullanılıyor?
+AI Cevabı
+Çünkü yazılması ve anlaşılması daha kolaydır.
+Her grammar kuralı için ayrı fonksiyon yazılır.
+Örneğin:
+parseExpression()
+parseTerm()
+parseFactor()
+şeklinde fonksiyonlar birbirini recursive çağırır.
+Bu yöntem küçük ve orta ölçekli yorumlayıcılarda çok yaygın kullanılır.
+________________________________________
+Prompt 13
+Expression, term ve factor fonksiyonlarını neden ayırıyoruz ben burada biraz koptum.
+AI Cevabı
+Bu ayrım işlem önceliklerini korumak için yapılır.
+Örneğin:
+2 + 3 * 4
+ifadesinde çarpma toplama işleminden önce yapılmalıdır.
+Bu yüzden:
+•	expression → toplama çıkarma
+•	term → çarpma bölme
+•	factor → sayı ve parantez
+şeklinde ayrım yapılır.
+________________________________________
+Prompt 14
+Ben sadece toplama çıkarma yapacaktım ama neden bu kadar yapı oluştu?
+AI Cevabı
+Çünkü yorumlayıcı geliştirmek yalnızca işlem hesaplamaktan ibaret değildir.
+Asıl önemli olan:
+•	kodun okunması
+•	analiz edilmesi
+•	syntax kontrolü
+•	AST oluşturulması
+•	evaluator ile çalıştırılması
+süreçleridir.
+Bu yüzden küçük bir yorumlayıcı bile belirli mimari yapılara ihtiyaç duyar.
+________________________________________
+Prompt 15
+Semantic analysis tam olarak ne kontrol ediyor?
+AI Cevabı
+Semantic analysis programın anlam bakımından doğru olup olmadığını kontrol eder.
+Örneğin:
+x + 5
+ifadesinde x tanımlı değilse semantic error oluşur.
+Aynı şekilde:
+"merhaba" - 5
+ifadesi de tip uyumsuzluğudur.
+________________________________________
+Prompt 16
+Syntax error ile semantic error arasındaki fark neydi?
+AI Cevabı
+Syntax error yazım hatasıdır.
+Örneğin:
+print(5
+parantez kapanmadığı için syntax error oluşur.
+Semantic error ise yazım doğru olsa bile anlam hatası olmasıdır.
+Örneğin:
+5 / 0
+syntax olarak doğrudur ama semantic olarak hatalıdır.
+________________________________________
+Prompt 17
+Evaluator tam olarak ne yapıyor?
+AI Cevabı
+Evaluator AST ağacını dolaşarak programı çalıştırır.
+Örneğin:
+7 + 5 * 3
+ifadesinde evaluator önce çarpma düğümünü hesaplar sonra toplama işlemini yapar.
+Ayrıca:
+•	değişkenleri bellekte tutar
+•	print komutlarını çalıştırır
+•	if koşullarını değerlendirir
+•	while döngülerini çalıştırır
+________________________________________
+Prompt 18
+Map kullanmadan değişken sistemi yapılabilir miydi?
+AI Cevabı
+Evet yapılabilirdi ama map kullanımı işleri çok kolaylaştırır.
+Çünkü değişken adına göre erişim sağlayabilirsin:
+variables["x"] = 5;
+Bu yöntem yorumlayıcılarda oldukça yaygın kullanılır.
+________________________________________
+Prompt 19
+while döngüsü yorumlayıcıda nasıl çalışıyor?
+AI Cevabı
+Önce koşul evaluate edilir.
+Eğer sonuç true ise body kısmı çalıştırılır.
+Body çalıştıktan sonra koşul tekrar kontrol edilir.
+Koşul false olduğunda döngü sona erer.
+________________________________________
+Prompt 20
+if else yapısını parser içerisinde nasıl ayırıyoruz?
+AI Cevabı
+Parser if tokenını gördüğünde önce koşulu parse eder.
+Daha sonra if bloğunu parse eder.
+Eğer else tokenı varsa else bloğu da parse edilir.
+Bu yapı AST üzerinde ayrı node’lar halinde tutulur.
+________________________________________
+Prompt 21
+Bu projede neden AST ağacını ekrana yazdırıyoruz?
+AI Cevabı
+Çünkü AST çıktısı parser’ın doğru çalışıp çalışmadığını anlamayı kolaylaştırır.
+Ayrıca işlem önceliklerini görsel olarak incelemek mümkün olur.
+Bu özellikle hata ayıklama sürecinde çok işe yarar.
+________________________________________
+Prompt 22
+Lexer çıktısını göstermenin amacı ne?
+AI Cevabı
+Lexer’ın doğru çalışıp çalışmadığını anlamak için token listesi gösterilir.
+Örneğin yanlış token oluşuyorsa parser da hatalı çalışacaktır.
+Bu yüzden lexer çıktısı debugging açısından önemlidir.
+________________________________________
+Prompt 23
+Ben parser kısmını yine tam oturtamadım. Parser tam olarak AST’yi nasıl oluşturuyor biraz daha basit anlatır mısın?
+AI Cevabı
+Parser token listesini sırayla okur ve grammar kurallarına göre node üretir.
+Mesela:
+7 + 5 * 3
+ifadesinde parser önce sayı node’larını oluşturur.
+Daha sonra operatörlere göre bunları birleştirir.
+Örneğin çarpma işlemi ayrı bir node olur:
+*
+├── 5
+└── 3
+Sonra toplama node’u bunun üstüne eklenir:
++
+├── 7
+└── *
+Böylece evaluator hangi işlemi önce yapacağını anlayabilir.
+________________________________________
+Prompt 24
+AST olayını yine tam anlamadım. Bu yapı olmasa gerçekten çok sorun olur muydu?
+AI Cevabı
+Küçük örneklerde belki doğrudan hesaplama yapılabilir ama proje büyüdükçe AST gerekli hale gelir.
+Örneğin:
+if (x > 5) {
+   print x;
+}
+şeklindeki yapılarda programın hangi bloklardan oluştuğunu saklamak gerekir.
+AST bu yapıları düzenli şekilde tutar.
+Ayrıca while, if, expression gibi yapıların hepsi node olarak temsil edilir.
+Bu yüzden AST yorumlayıcının temel yapılarından biridir.
+________________________________________
+Prompt 25
+Ben şu expression term factor olayını yine karıştırdım.
+AI Cevabı
+Bu yapı tamamen işlem önceliği için kullanılıyor.
+Örneğin:
+2 + 3 * 4
+ifadesinde çarpma önce yapılmalı.
+Bu yüzden parser şu sırayla çalışır:
+•	factor → sayılar/parantez
+•	term → çarpma bölme
+•	expression → toplama çıkarma
+Böylece işlem sırası otomatik korunmuş olur.
+________________________________________
+Prompt 26
+Ben recursive mantığını tam anlayamadım. Parser neden kendini tekrar çağırıyor?
+AI Cevabı
+Çünkü matematiksel ifadeler iç içe olabilir.
+Mesela:
+(2 + (3 * 5))
+şeklinde parantezli ifadelerde parser yeni expression’ları tekrar parse etmek zorunda kalır.
+Bu yüzden recursive yapı kullanılır.
+Recursive yapı özellikle parantezli işlemlerde çok önemlidir.
+________________________________________
+Prompt 27
+Şimdi daha iyi oturdu ama lexer parser evaluator sırası neden bu şekilde?
+AI Cevabı
+Çünkü her aşama bir sonraki aşamanın çalışabilmesi için gerekli veriyi üretir.
+Sıra şu şekildedir:
+Kaynak Kod
+↓
+Lexer
+↓
+Token Listesi
+↓
+Parser
+↓
+AST
+↓
+Evaluator
+↓
+Program Çıktısı
+Örneğin parser’ın çalışabilmesi için önce token listesi gerekir.
+Evaluator’ın çalışabilmesi için de AST gerekir.
+Bu yüzden aşamalar birbirine bağlıdır.
+________________________________________
+Prompt 28
+Ben yorumlayıcı ile compiler arasındaki farkı biraz karıştırıyorum.
+AI Cevabı
+Compiler kaynak kodu doğrudan makine koduna çevirir.
+Interpreter yani yorumlayıcı ise kodu satır satır analiz edip çalıştırır.
+Senin projen interpreter mantığıyla çalışıyor.
+Yani MiniTR kodları anlık olarak parse edilip evaluate ediliyor.
+________________________________________
+Prompt 29
+Bu projede en zor kısım sence hangisi?
+AI Cevabı
+Genelde parser ve AST kısmı en zor bölümdür.
+Çünkü:
+•	grammar kuralları
+•	işlem öncelikleri
+•	recursive yapı
+•	AST node ilişkileri
+aynı anda düşünülmelidir.
+Lexer kısmı daha mekanik çalışır ama parser kısmı daha fazla mantık gerektirir.
+________________________________________
+Prompt 30
+Ben bu projeyi ilk başta çok daha kısa sanıyordum.
+AI Cevabı
+Çoğu kişi başlangıçta yalnızca matematik işlemi yapılacağını düşündüğü için yorumlayıcıların kısa olacağını sanıyor.
+Ama aslında:
+•	lexer
+•	parser
+•	AST
+•	semantic analysis
+•	evaluator
+gibi aşamalar olduğu için kod miktarı artıyor.
+Gerçek programlama dilleri ise bunların çok daha gelişmiş halidir.
+________________________________________
+Prompt 31
+Struct yerine class kullansak çok fark olur muydu?
+AI Cevabı
+Temel mantık çok değişmezdi.
+Ancak struct daha sade veri tutma işlemleri için kullanıldığı için küçük projelerde daha pratik olabilir.
+Class kullanılsaydı encapsulation gibi ekstra özellikler de kullanılabilirdi.
+________________________________________
+Prompt 32
+Ben bu projeyi geliştirsem ileride neler ekleyebilirim?
+AI Cevabı
+Projeyi ileride oldukça geliştirebilirsin.
+Örneğin:
+•	fonksiyon sistemi
+•	for döngüsü
+•	array desteği
+•	kullanıcıdan input alma
+•	dosya işlemleri
+•	kendi standart kütüphaneni oluşturma
+•	garbage collector
+•	bytecode sistemi
+gibi özellikler eklenebilir.
+Bu tarz geliştirmeler projeyi gerçek programlama dillerine daha da yaklaştırır.
+
